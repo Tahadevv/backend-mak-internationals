@@ -87,6 +87,7 @@ app.post('/api/profiles', async (req, res) => {
   try {
     const { phoneNumber } = req.body;
 
+    // Check if the profile already exists
     const existingProfile = await Profile.findOne({ phoneNumber });
 
     if (existingProfile) {
@@ -97,13 +98,7 @@ app.post('/api/profiles', async (req, res) => {
       });
     }
 
-    // Check if the maximum number of profiles has been reached (limit: 8)
-    const totalProfiles = await Profile.countDocuments();
-    
-   
-
-
-    // If profile doesn't exist and the limit is not reached, create a new one
+    // Create a new profile if it doesn't exist
     const newProfile = await Profile.create({ phoneNumber });
 
     res.status(201).json({
@@ -115,6 +110,7 @@ app.post('/api/profiles', async (req, res) => {
     res.status(500).json({ message: 'Error creating or fetching profile' });
   }
 });
+
 
 
 // Create Account
