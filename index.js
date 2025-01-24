@@ -56,6 +56,13 @@ const amountSchema = new mongoose.Schema({
   
 });
 
+const inventorySchema = new mongoose.Schema({ 
+  itemName: String,
+  amount: Number,
+  quantity: Number,
+  
+});
+
 const customerSchema = new mongoose.Schema({
   name: String,
   phoneNumber: String,
@@ -76,6 +83,7 @@ const Profile = mongoose.model('Profile', profileSchema);
 const Account = mongoose.model('Account', accountSchema);
 const Customer = mongoose.model('Customer', customerSchema);
 const Supplier = mongoose.model('Supplier', supplierSchema);
+const Inventory = mongoose.model('Inventory', inventorySchema);
 
 
 
@@ -307,6 +315,76 @@ app.delete('/api/suppliers/:supplierId/delete-amount/:amountId', async (req, res
   } catch (error) {
     console.error('Error deleting amount for supplier:', error);
     res.status(500).json({ message: 'Error deleting amount for supplier' });
+  }
+});
+
+// inventory
+
+app.post('/api/inventory', async (req, res) => {
+  try {
+    const { itemName, amount, quantity } = req.body;
+    const inventory = await Inventory.create({ itemName, amount, quantity });
+    res.status(201).json({ message: 'Inventory created successfully!', inventoryId: inventory._id });
+  } catch (error) {
+    console.error('Error creating inventory:', error);
+    res.status(500).json({ message: 'Error creating inventory' });
+  }
+});
+
+// Get All Inventory
+app.get('/api/inventory', async (req, res) => {
+  try {
+    const inventory = await Inventory.find();
+    res.status(200).json(inventory);
+  } catch (error) {
+    console.error('Error fetching inventory:', error);
+    res.status(500).json({ message: 'Error fetching inventory' });
+  }
+});
+
+// put inventory
+
+app.put('/api/inventory/:inventoryId/edit-amount', async (req, res) => {
+  try {
+    const { inventoryId } = req.params;
+    const { amount, quantity } = req.body;
+
+    const inventory = await Inventory.findById(inventoryId);
+
+    if (!inventory) {
+      return res.status(404).json({ message: 'Inventory not found' });
+    }
+
+    // Update the amount details
+    inventory.amount = amount;
+    inventory.quantity = quantity;
+
+    await inventory.save();
+
+    res.status(200).json({ message: 'Amount edited successfully!', inventoryId: inventory._id });
+  } catch (error) {
+    console.error('Error editing amount for inventory:', error);
+    res.status(500).json({ message: 'Error editing amount for inventory' });
+  }
+});
+
+// Delete Inventory
+app.delete('/api/inventory/:inventoryId', async (req, res) => {
+  try {
+    const { inventoryId } = req.params;
+
+    const deletedInventory = await Inventory.findByIdAndDelete(inventoryId);
+
+    if (!deletedInventory) {
+      console.log('Inventory not found');
+      return res.status(404).json({ message: 'Inventory not found' });
+    }
+
+    console.log('Inventory deleted successfully');
+    res.status(200).json({ message: 'Inventory deleted successfully!', inventoryId: deletedInventory._id });
+  } catch (error) {
+    console.error('Error deleting inventory:', error);
+    res.status(500).json({ message: 'Error deleting inventory' });
   }
 });
 
